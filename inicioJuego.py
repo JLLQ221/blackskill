@@ -2,8 +2,6 @@ from tkinter import *
 from jugador import jugador
 from carta import carta
 from ia import ia
-from PIL import Image, ImageTk
-
 
 class inicioJuego:
     def __init__(self, ventana):
@@ -50,36 +48,47 @@ class inicioJuego:
                    self.ventana.after(2000, lambda: self.mostrarOpciones())
                 case 3:
                    self.limpiar()
-                   self.jugadores[self.jugadorTurno].quedarse()
+                   self.jugadores[self.jugadorTurno].plantarse()
                         
              self.opcion = 0
        self.ventana.after(100, self.jugador1TurnoStart)
-
       else:
-         self.setLabelAccion("Turno del oponente")
-         self.setLabelAccionAfet("", 1500)
-         self.jugadorTurno = 1
-         self.jugadorIA.turno = True
-         self.ventana.after(1650 , lambda: self.realizarAccionIA() )
+         if(self.jugador1.masoPerdido == False):
+          print("Turno del oponente")
+          self.setLabelAccion("Turno del oponente")
+          self.setLabelAccionAfet("", 1500)
+          self.jugadorTurno = 1
+          self.jugadorIA.turno = True
+          self.ventana.after(1650 , lambda: self.realizarAccionIA() )
+         else:
+            if not self.finJuego():
+               self.finTurno()
+            else: 
+               self.finJuego()
 
-    def realizarAccionIA(self):  
-        state = self.IA.reset()
-        self.done = False
-        
-        def ejecutar_accion():
+    def realizarAccionIA(self):
+     state = self.IA.reset()
+     self.done = False
+    
+     def ejecutar_accion():
+        if not self.done:
+            action = self.IA.action_space.sample()
+            state, reward, self.done, info = self.IA.step(action)
             if not self.done:
-                action = self.IA.action_space.sample()
-                state, reward, self.done, info = self.IA.step(action)
-                if not self.done:
-                    self.ventana.after(2600, lambda: ejecutar_accion())  # Programar la próxima acción después de 6 segundos
-        
-        ejecutar_accion()
-        
+                self.ventana.after(3000, lambda: ejecutar_accion())  # Programar la próxima acción después de 2.6 segundos
+            else:
+                 if not self.finJuego():
+                    self.ventana.after(1500, lambda: self.finTurno())
+                 else:
+                    self.finJuego()
+    
+     ejecutar_accion()
+
 
     def usarHabilidadIA(self, i):
         print("IA usa habilidad")
-        self.mostrarOpcionesIA(0, 800)
-        self.ventana.after(1400, lambda: self.mostrarHabilidadesIA(i) )
+        self.mostrarOpcionesIA(0, 700)
+        self.ventana.after(1100, lambda: self.mostrarHabilidadesIA(i) )
         reward = 20
         return reward
 
@@ -87,27 +96,77 @@ class inicioJuego:
         print(len(self.cartas))
         print("IA usa tomar carta")
 
-        if(len(self.cartas) > 0):
-         self.mostrarOpcionesIA(1, 900)
+        if len(self.cartas) > 0:
+         self.mostrarOpcionesIA(1, 700)
          self.jugadores[self.jugadorTurno].insertCard(self.cartas[0])
          self.cartas.pop(0)
-        
         reward = 10
         return reward
 
     def plantarseIA(self):
-        self.mostrarOpcionesIA(2, 900)
-        self.jugadores[self.jugadorTurno].turno = False
+        print("Ia uso plantarse")
+        self.mostrarOpcionesIA(2, 700)
+        self.jugadores[self.jugadorTurno].plantarse()
         reward = 5
-        return reward          
+        return reward 
+
+    def rondaReiniciar(self):
+        self.done = True
+        for jugador in self.jugadores :
+            jugador.vaciarMaso()
+        self.cartas=[]    
+        self.crearCartas()
+        self.setLabelAccion("Asignando cartas...")
+        self.opcion = 0
+        self.jugadorTurno = 0
+        self.ventana.after(3000, lambda: self.iniciarJuego())  # Espera 5 segundos antes de llamar a iniciarJuego
+
+    def finTurno(self):
+        resultado = ""
+        if self.jugador1.getCountMaso() == self.jugadorIA.getCountMaso():
+         resultado = "Empate"
+        elif self.jugadorIA.getCountMaso() > self.jugador1.getCountMaso() and not self.jugadorIA.masoPerdido:
+         resultado = "Perdiste la ronda"
+         self.setLabelAccion(resultado)
+         self.jugador1.popVida()
+        elif self.jugador1.getCountMaso() > self.jugadorIA.getCountMaso() and not self.jugador1.masoPerdido:
+         resultado = "Ganaste la ronda"
+         self.setLabelAccion(resultado)
+         self.jugadorIA.popVida()
+        elif self.jugadorIA.masoPerdido:
+         resultado = "Ganaste la ronda"
+         self.setLabelAccion(resultado)
+         self.jugador1.popVida()
+        elif self.jugador1.masoPerdido:
+         resultado = "Perdiste la ronda"
+         self.jugadorIA.popVida()
+        else:
+         resultado = "Ninguno de los anteriores"
+
+        self.setLabelAccionAfet(resultado, 1200)
+        self.setLabelAccionAfet("", 3000)
+        self.ventana.after(4500, lambda: self.rondaReiniciar())
+
+
+    def finJuego(self):
+        if self.jugadores[0].getCountVidas() == 0 :  
+         self.setLabelAccion("Se termino el juego")
+         self.setLabelAccionAfet("", 1500) 
+         return True
+        elif  self.jugadores[1].getCountVidas() == 0:
+         self.setLabelAccion("Ganastes")
+         self.setLabelAccionAfet("", 1500)
+         return True
+        return False
+          
    
     def mostrarOpciones(self):
-       buttonOp1 = Button(self.ventana, text="Habilidad", background=self.colorBotons, relief="raised", foreground="white" ,command=lambda: self.asignarOpcion(1), font=("arial", 10, "bold"), activebackground=self.colorAccion, activeforeground=self.activeForeground)
-       buttonOp2 = Button(self.ventana, text="Tomar carta", background=self.colorBotons, relief="raised" , foreground="white" ,command=lambda: self.asignarOpcion(2), font=("arial", 10, "bold"), activebackground=self.colorAccion, activeforeground=self.activeForeground)
-       buttonOp3 = Button(self.ventana, text="Plantarse", background=self.colorBotons, relief="raised", foreground="white" ,command=lambda: self.asignarOpcion(3), font=("arial", 10, "bold"), activebackground=self.colorAccion, activeforeground=self.activeForeground)
-       buttonOp1.place(relx=0.30, rely=0.6, relwidth=0.1)
-       buttonOp2.place(relx=0.46, rely=0.55, relwidth=0.13)
-       buttonOp3.place(relx=0.62, rely=0.6, relwidth=0.1)
+       buttonOp1 = Button(self.ventana, text="Habilidad", background=self.colorBotons, relief="raised", foreground="white" ,command=lambda: self.asignarOpcion(1), font=("arial", 11, "bold"), activebackground=self.colorAccion, activeforeground=self.activeForeground)
+       buttonOp2 = Button(self.ventana, text="Tomar carta", background=self.colorBotons, relief="raised" , foreground="white" ,command=lambda: self.asignarOpcion(2), font=("arial", 11, "bold"), activebackground=self.colorAccion, activeforeground=self.activeForeground)
+       buttonOp3 = Button(self.ventana, text="Plantarse", background=self.colorBotons, relief="raised", foreground="white" ,command=lambda: self.asignarOpcion(3), font=("arial", 11, "bold"), activebackground=self.colorAccion, activeforeground=self.activeForeground)
+       buttonOp1.place(relx=0.30, rely=0.6, relwidth=0.13)
+       buttonOp2.place(relx=0.46, rely=0.55, relwidth=0.14)
+       buttonOp3.place(relx=0.62, rely=0.6, relwidth=0.13)
 
     def mostrarHabilidades(self):
       if(self.jugadores[self.jugadorTurno].getCountHabilidades() > 0):
@@ -115,16 +174,16 @@ class inicioJuego:
     
         # Definir las posiciones y tamaños de los botones
        posiciones = [
-         {"relx": 0.30, "rely": 0.6, "relwidth": 0.1},
-         {"relx": 0.46, "rely": 0.55, "relwidth": 0.12},
-         {"relx": 0.60, "rely": 0.6, "relwidth": 0.1}
+         {"relx": 0.30, "rely": 0.6, "relwidth": 0.13},
+         {"relx": 0.46, "rely": 0.55, "relwidth": 0.14},
+         {"relx": 0.60, "rely": 0.6, "relwidth": 0.13}
         ]
        
        # Crear los botones con sus respectivas habilidades
        buttonArray = [
-          Button(self.ventana, background=self.colorBotons, relief="raised", foreground="white", font=("arial", 10, "bold"), activebackground=self.colorAccion, activeforeground=self.activeForeground),
-          Button(self.ventana, background=self.colorBotons, relief="raised", foreground="white", font=("arial", 10, "bold"), activebackground=self.colorAccion, activeforeground=self.activeForeground),
-          Button(self.ventana, background=self.colorBotons, relief="raised", foreground="white", font=("arial", 10, "bold"), activebackground=self.colorAccion, activeforeground=self.activeForeground)
+          Button(self.ventana, background=self.colorBotons, relief="raised", foreground="white", font=("arial", 11, "bold"), activebackground=self.colorAccion, activeforeground=self.activeForeground),
+          Button(self.ventana, background=self.colorBotons, relief="raised", foreground="white", font=("arial", 11, "bold"), activebackground=self.colorAccion, activeforeground=self.activeForeground),
+          Button(self.ventana, background=self.colorBotons, relief="raised", foreground="white", font=("arial", 11, "bold"), activebackground=self.colorAccion, activeforeground=self.activeForeground)
         ]
 
        # Colocar los botones utilizando las posiciones almacenadas
@@ -137,19 +196,19 @@ class inicioJuego:
          self.mostrarOpciones()
 
 
-    def mostrarOpcionesIA (self, index = -1, tiempo = 1200):
-       buttonOp1 = Label(self.ventana, text="Habilidad", background=self.colorBotons, relief="raised", foreground="white", font=("arial", 10, "bold"))
-       buttonOp2 = Label(self.ventana, text="Tomar carta", background=self.colorBotons, relief="raised", foreground="white", font=("arial", 10, "bold"))
-       buttonOp3 = Label(self.ventana, text="Plantarse", background=self.colorBotons, relief="raised", foreground="white", font=("arial", 10, "bold"))
-       buttonOp1.place(relx=0.30, rely=0.2, relwidth=0.1)
-       buttonOp2.place(relx=0.46, rely=0.35, relwidth=0.13)
-       buttonOp3.place(relx=0.62, rely=0.2, relwidth=0.1)
+    def mostrarOpcionesIA (self, index = -1, tiempo = 1100):
+       buttonOp1 = Label(self.ventana, text="Habilidad", background=self.colorBotons, relief="raised", foreground="white", font=("arial", 11, "bold"))
+       buttonOp2 = Label(self.ventana, text="Tomar carta", background=self.colorBotons, relief="raised", foreground="white", font=("arial", 11, "bold"))
+       buttonOp3 = Label(self.ventana, text="Plantarse", background=self.colorBotons, relief="raised", foreground="white", font=("arial", 11, "bold"))
+       buttonOp1.place(relx=0.30, rely=0.2, relwidth=0.13)
+       buttonOp2.place(relx=0.46, rely=0.35, relwidth=0.14)
+       buttonOp3.place(relx=0.62, rely=0.2, relwidth=0.13)
        arrayButton = [buttonOp1, buttonOp2, buttonOp3]
 
        #  Marcar la opcion elegida por la IA 
        if(index != -1):
         self.ventana.after(tiempo , lambda: self.accionButton(arrayButton, index))
-        self.ventana.after(1300, lambda: self.limpiar())
+        self.ventana.after(1100, lambda: self.limpiar())
 
     def mostrarHabilidadesIA (self, index = -1):
       if(self.jugadores[1].getCountHabilidades() > 0):
@@ -157,16 +216,16 @@ class inicioJuego:
     
         # Definir las posiciones y tamaños de los botones
        posiciones = [
-         {"relx": 0.30, "rely": 0.2, "relwidth": 0.1},
-         {"relx": 0.46, "rely": 0.35, "relwidth": 0.13},
-         {"relx": 0.60, "rely": 0.2, "relwidth": 0.1}
+         {"relx": 0.30, "rely": 0.2, "relwidth": 0.13},
+         {"relx": 0.46, "rely": 0.35, "relwidth": 0.14},
+         {"relx": 0.60, "rely": 0.2, "relwidth": 0.13}
         ]
        
        # Crear los botones con sus respectivas habilidades
        buttonArray = [
-          Label(self.ventana, background=self.colorBotons, relief="raised", foreground="white", font=("arial", 10, "bold")),
-          Label(self.ventana, background=self.colorBotons, relief="raised", foreground="white", font=("arial", 10, "bold")),
-          Label(self.ventana, background=self.colorBotons, relief="raised", foreground="white", font=("arial", 10, "bold"))
+          Label(self.ventana, background=self.colorBotons, relief="raised", foreground="white", font=("arial", 11, "bold")),
+          Label(self.ventana, background=self.colorBotons, relief="raised", foreground="white", font=("arial", 11, "bold")),
+          Label(self.ventana, background=self.colorBotons, relief="raised", foreground="white", font=("arial", 11, "bold"))
         ]
 
        # Colocar los botones utilizando las posiciones almacenadas
@@ -182,6 +241,10 @@ class inicioJuego:
          self.setLabelAccion("No tienes habilidades")
          self.setLabelAccionAfet("", 2000)
          self.mostrarOpcionesIA()
+
+
+    def cartaSiguienteIA(self):
+      self.verCartaSiguiente(True)
 
 
     def accionButton(self, arrayButton, index):
@@ -207,13 +270,30 @@ class inicioJuego:
                 self.limpiar()
                 self.ventana.after(300, lambda: self.mostrarOpciones()) 
                self.habilidadOp = ""
+            case "Sg. carta":
+              if(IA == False):
+                self.verCartaSiguiente()
+                self.limpiar()
+                self.ventana.after(300, lambda: self.mostrarOpciones()) 
+              else:
+                self.verCartaSiguiente(True)
 
+    def verCartaSiguiente(self, IA = False):
+        cartaSiguiente = self.cartas[0]
+        valor = cartaSiguiente.valor
+        tipo = cartaSiguiente.tipo
+        if(not IA):
+         self.setLabelAccion(str(valor) + ", " +  tipo )
+         self.setLabelAccionAfet("", 1200)
+        else:
+           return cartaSiguiente
+            
     def colocarLabelImp(self):
         colorLabelCount = "#cecece"
         self.ventana.config(background=self.colorUniversal)
         self.labelCountJugador = Label(self.ventana, text="0", background=colorLabelCount, font=("Arial", 12)) 
         self.labelCountIaJugador = Label(self.ventana, text="0", background=colorLabelCount, font=("Arial", 12))
-        self.labelAccion = Label(self.ventana, text="", background=self.colorUniversal, font=("Arial", 12), relief="ridge")
+        self.labelAccion = Label(self.ventana, text="", background=self.colorUniversal, font=("Arial", 12, "bold"), relief="ridge")
         self.ventana.config(background=None)
         self.labelLifeJugador = Label(self.ventana, text="Tus vidas: 3", background=self.colorUniversal, foreground="white"  ,font=("Arial", 12))
         self.labelLifeIA = Label(self.ventana, text="Oponente vidas: 3", background=self.colorUniversal, foreground="white" ,font=("Arial", 12))
@@ -225,10 +305,9 @@ class inicioJuego:
          self.labelLifeIA.place( relx=0 , rely=0.01 ,  relwidth=0.2, relheight=0.05)  
          self.labelAccion.place(relx=0.15, rely=0.4, relwidth=0.7, relheight=0.09)
 
-       
     def crearCartas(self):
        for i in range(8):
-        carta1 = carta(1,"Rombo")
+        carta1 = carta(10,"Figura")
         self.cartas.append(carta1)
 
     def setLabelAccion(self, txt):

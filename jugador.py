@@ -6,11 +6,11 @@ class jugador:
         self.habilidades = []
         self.countMaso = 0
         self.turno = False
-        self.stateHabilidad = False
         self.cartasLabel = cartasLabel
         self.countLabel = countLabel
         self.lifeLabel = lifeLabel
         self.nombre = nombre
+        self.masoPerdido = False
         
     def insertCard (self ,carta):
         self.cartas.append(carta)
@@ -21,6 +21,13 @@ class jugador:
         self.countLabel.config(text=str(self.countMaso))
         if(self.getCountMaso() > 21):
           self.turno = False
+          self.masoPerdido = True
+
+    def vaciarMaso(self):
+       self.cartas=[]
+       self.countMaso = 0
+       self.habilidades = []
+       self.updateLabels()
 
     def getCards (self):
        return self.cartas.copy()
@@ -52,7 +59,7 @@ class jugador:
     def getCountMaso(self):
        return self.countMaso
     
-    def quedarse(self):
+    def plantarse(self):
        self.turno = False
    
     def updateLabels(self):

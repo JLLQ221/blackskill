@@ -12,9 +12,9 @@ class carta:
             case "As":
                 self.habilidad= "Vida"
             case "Figura":
-                self.habilidad="Ver carta siguiente"
+                self.habilidad="Sg. carta"
             case "Rombo":
-                self.habilidad="Quitar vida"    
+                self.habilidad="Quitar vida"  
             case _:
                 self.habilidad= ""
      

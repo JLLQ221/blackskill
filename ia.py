@@ -86,15 +86,16 @@ class ia(gym.Env):
 
 
     def check_done(self):
-        # Verifica si la vida de alguno de los jugadores ha llegado a cero
-        if self.juego.jugadores[0].getCountVidas() <= 0 or self.context.getCountVidas() <= 0:
-            return True
-        # Verifica si el turno del el mismo ha terminado
-        if self.context.turno == False:
-            return True
-        if len(self.juego.cartas) <= 0:
-            return True
-        return False
+     # Verifica si la vida de alguno de los jugadores ha llegado a cero
+     if self.juego.jugadores[0].getCountVidas() <= 0 or self.context.getCountVidas() <= 0:
+        return True
+     # Verifica si el turno del jugador ha terminado
+     if self.context.turno == False:
+        return True
+     if len(self.juego.cartas) <= 0:
+        return True
+     return False
+
 
     def render(self, mode='human'):
         # Renderizar el entorno (opcional)
