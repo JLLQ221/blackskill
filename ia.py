@@ -1,7 +1,7 @@
 import gym 
 from gym import spaces
 import numpy as np
-from QLearningAgente import QLearningAgente
+from HeuristicAgent import HeuristicAgent
 
 class ia(gym.Env):
     def __init__(self, juego):
@@ -14,38 +14,39 @@ class ia(gym.Env):
         self.context = juego.jugadorIA
         self.history = []
         
-        # Inicializar Q-Learning Agent
-        state_size = 10**5  # Ejemplo, ajusta según tus necesidades
-        action_size = self.action_space.n
-        self.q_agent = QLearningAgente(state_size=state_size, action_size=action_size)
+        # Inicializar agente heurístico
+        self.h_agent = HeuristicAgent()
 
     def reset(self):
         # Resetear el entorno a un estado inicial
         self.state = np.zeros(5)  # Define un estado inicial apropiado
         return self.state
 
-    def step(self, action):
-     reward = 0
-     if action == 0:  # Usar habilidad
-        if self.context.getCountHabilidades() > 0:
-            habilidad_index = self.elegirMejorHabilidad()
-            reward = self.juego.usarHabilidadIA(habilidad_index)
-        else:
-            reward = -5  # Penalización por intentar usar una habilidad sin tener ninguna
-     elif action == 1:  # Pedir carta
-        reward = self.juego.tomarCartaIA()
-     elif action == 2:  # Plantarse
-        reward = self.juego.plantarseIA()
+    def step(self, action=None):
+        reward = 0
+        if action is None:
+            action = self.h_agent.elegir_accion(self.state)
 
-     self.state = self.get_updated_state()
-     done = self.check_done()
+        if action == 0:  # Usar habilidad
+            if self.context.getCountHabilidades() > 0:
+                habilidad_index = self.elegirMejorHabilidad()
+                reward = self.juego.usarHabilidadIA(habilidad_index)
+            else:
+                reward = -5  # Penalización por intentar usar una habilidad sin tener ninguna
+        elif action == 1:  # Pedir carta
+            reward = self.juego.tomarCartaIA()
+        elif action == 2:  # Plantarse
+            reward = self.juego.plantarseIA()
 
-     info = {
-        "action_id": action,
-        "previous_actions": self.history,
-     }
+        self.state = self.get_updated_state()
+        done = self.check_done()
 
-     return self.state, reward, done, info
+        info = {
+            "action_id": action,
+            "previous_actions": self.history,
+        }
+
+        return self.state, reward, done, info
 
     def elegirMejorHabilidad(self):
      state = self.state

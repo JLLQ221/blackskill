@@ -45,7 +45,8 @@ class inicioJuego:
                    self.limpiar()
                    self.jugadores[self.jugadorTurno].insertCard(self.cartas[0])
                    self.cartas.pop(0)
-                   self.ventana.after(2000, lambda: self.mostrarOpciones())
+                   if(not self.jugador1.masoPerdido):
+                    self.ventana.after(2000, lambda: self.mostrarOpciones())
                 case 3:
                    self.limpiar()
                    self.jugadores[self.jugadorTurno].plantarse()
@@ -119,7 +120,7 @@ class inicioJuego:
         self.setLabelAccion("Asignando cartas...")
         self.opcion = 0
         self.jugadorTurno = 0
-        self.ventana.after(3000, lambda: self.iniciarJuego())  # Espera 5 segundos antes de llamar a iniciarJuego
+        self.ventana.after(3500, lambda: self.iniciarJuego())  # Espera 5 segundos antes de llamar a iniciarJuego
 
     def finTurno(self):
         resultado = ""
@@ -127,25 +128,22 @@ class inicioJuego:
          resultado = "Empate"
         elif self.jugadorIA.getCountMaso() > self.jugador1.getCountMaso() and not self.jugadorIA.masoPerdido:
          resultado = "Perdiste la ronda"
-         self.setLabelAccion(resultado)
          self.jugador1.popVida()
         elif self.jugador1.getCountMaso() > self.jugadorIA.getCountMaso() and not self.jugador1.masoPerdido:
          resultado = "Ganaste la ronda"
-         self.setLabelAccion(resultado)
          self.jugadorIA.popVida()
         elif self.jugadorIA.masoPerdido:
-         resultado = "Ganaste la ronda"
-         self.setLabelAccion(resultado)
+         resultado = "Ganastes la ronda"
          self.jugador1.popVida()
         elif self.jugador1.masoPerdido:
          resultado = "Perdiste la ronda"
-         self.jugadorIA.popVida()
+         self.jugador1.popVida()
         else:
          resultado = "Ninguno de los anteriores"
 
         self.setLabelAccionAfet(resultado, 1200)
-        self.setLabelAccionAfet("", 3000)
-        self.ventana.after(4500, lambda: self.rondaReiniciar())
+        self.setLabelAccionAfet("", 2500)
+        self.ventana.after(3000, lambda: self.rondaReiniciar())
 
 
     def finJuego(self):

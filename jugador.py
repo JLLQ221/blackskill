@@ -28,6 +28,8 @@ class jugador:
        self.countMaso = 0
        self.habilidades = []
        self.updateLabels()
+       self.masoPerdido = False
+       self.turno = False
 
     def getCards (self):
        return self.cartas.copy()
