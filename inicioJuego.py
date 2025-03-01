@@ -115,7 +115,7 @@ class inicioJuego:
             jugador.vaciarMaso()
         self.cartas=[]    
         self.crearCartas()
-        self.ventana.after(1100, lambda: self.limpiar())
+        self.ventana.after(1100, lambda: self.limpiar(False))
         self.setLabelAccion("Asignando cartas...")
         self.opcion = 0
         self.jugadorTurno = 0
@@ -149,13 +149,16 @@ class inicioJuego:
         if self.jugadores[0].getCountVidas() == 0 :  
          self.setLabelAccion("Se termino el juego")
          self.setLabelAccionAfet("", 1500) 
+         self.limpiar(False)
          return True
         elif  self.jugadores[1].getCountVidas() == 0:
          self.setLabelAccion("Ganastes")
          self.setLabelAccionAfet("", 1500)
+         self.limpiar(False)
          return True
         return False
           
+    
    
     def mostrarOpciones(self):
        buttonOp1 = Button(self.ventana, text="Habilidad", background=self.colorBotons, relief="raised", foreground="white" ,command=lambda: self.asignarOpcion(1), font=("arial", 11, "bold"), activebackground=self.colorAccion, activeforeground=self.activeForeground)
