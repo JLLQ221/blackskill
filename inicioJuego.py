@@ -1,7 +1,7 @@
 from tkinter import *
 from jugador import jugador
 from carta import carta
-from ia import ia
+from ia import iaHeuristico
 from PIL import Image, ImageTk
 
 
@@ -19,7 +19,7 @@ class inicioJuego:
        self.jugador1 = jugador(countLabel=self.labelCountJugador, lifeLabel=self.labelLifeJugador, nombre="Tus")
        self.jugadorIA = jugador(countLabel=self.labelCountIaJugador, lifeLabel=self.labelLifeIA, nombre="Oponente")
        self.jugadores = [self.jugador1, self.jugadorIA]
-       self.IA = ia(self)
+       self.IA = iaHeuristico(self)
        self.opcion = 0
        self.habilidadOp = ""
        self.jugadorTurno = 0
