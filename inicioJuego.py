@@ -1,4 +1,4 @@
-from tkinter import *
+from tkinter import Label, Button
 from jugador import jugador
 from carta import carta
 from ia import ia
@@ -11,12 +11,12 @@ class inicioJuego:
        self.activeForeground = "#d0d2d5"
        self.ventana = ventana
        self.colocarLabelImp()
+       self.jugador1 = jugador(countLabel=self.labelCountJugador, lifeLabel=self.labelLifeJugador, y=0.8 , ventana=self.ventana ,  nombre="Tus")
+       self.jugadorIA = jugador(countLabel=self.labelCountIaJugador, lifeLabel=self.labelLifeIA, y=0.03 , ventana=self.ventana ,nombre="Oponente")
+       self.jugadores = [self.jugador1, self.jugadorIA]
        self.limpiar()
        self.placeLabelJugadores()
        self.setLabelAccion("Asignando cartas...")
-       self.jugador1 = jugador(countLabel=self.labelCountJugador, lifeLabel=self.labelLifeJugador, nombre="Tus")
-       self.jugadorIA = jugador(countLabel=self.labelCountIaJugador, lifeLabel=self.labelLifeIA, nombre="Oponente")
-       self.jugadores = [self.jugador1, self.jugadorIA]
        self.IA = ia(self)
        self.opcion = 0
        self.habilidadOp = ""
@@ -24,11 +24,11 @@ class inicioJuego:
        self.cartas = []
        self.crearCartas()
    
-
     def iniciarJuego(self):
        self.setLabelAccion("")
        self.asignarCartas()
        self.placeLabelJugadores()
+       self.colocarCartasPlayers()
        self.jugadores[self.jugadorTurno].turno=True
        self.mostrarOpciones()
        self.jugador1TurnoStart()
@@ -42,9 +42,9 @@ class inicioJuego:
                    self.limpiar()
                    self.mostrarHabilidades()
                 case 2:
-                   self.limpiar()
                    self.jugadores[self.jugadorTurno].insertCard(self.cartas[0])
                    self.cartas.pop(0)
+                   self.limpiar()
                    if(not self.jugador1.masoPerdido):
                     self.ventana.after(2000, lambda: self.mostrarOpciones())
                 case 3:
@@ -60,7 +60,7 @@ class inicioJuego:
           self.setLabelAccionAfet("", 1500)
           self.jugadorTurno = 1
           self.jugadorIA.turno = True
-          self.ventana.after(1650 , lambda: self.realizarAccionIA() )
+          self.ventana.after(1750 , lambda: self.realizarAccionIA() )
          else:
             if not self.finJuego():
                self.finTurno()
@@ -76,19 +76,18 @@ class inicioJuego:
             action = self.IA.action_space.sample()
             state, reward, self.done, info = self.IA.step(action)
             if not self.done:
-                self.ventana.after(3000, lambda: ejecutar_accion())  # Programar la próxima acción después de 2.6 segundos
+                self.ventana.after(2800, lambda: ejecutar_accion())  # Programar la próxima acción después de 2.6 segundos
             else:
                  if not self.finJuego():
-                    self.ventana.after(1500, lambda: self.finTurno())
+                    self.ventana.after(2000, lambda: self.finTurno())
                  else:
-                    self.finJuego()
-    
+                    self.ventana.after(2000, lambda: self.finJuego())
      ejecutar_accion()
 
 
     def usarHabilidadIA(self, i):
         print("IA usa habilidad")
-        self.mostrarOpcionesIA(0, 700)
+        self.mostrarOpcionesIA(0, 500)
         self.ventana.after(1100, lambda: self.mostrarHabilidadesIA(i) )
         reward = 20
         return reward
@@ -98,7 +97,7 @@ class inicioJuego:
         print("IA usa tomar carta")
 
         if len(self.cartas) > 0:
-         self.mostrarOpcionesIA(1, 700)
+         self.mostrarOpcionesIA(1, 500)
          self.jugadores[self.jugadorTurno].insertCard(self.cartas[0])
          self.cartas.pop(0)
         reward = 10
@@ -106,21 +105,21 @@ class inicioJuego:
 
     def plantarseIA(self):
         print("Ia uso plantarse")
-        self.mostrarOpcionesIA(2, 700)
-        self.jugadores[self.jugadorTurno].plantarse()
+        self.mostrarOpcionesIA(2, 500)
+        self.jugadorIA.plantarse()
         reward = 5
         return reward 
 
     def rondaReiniciar(self):
-        self.done = True
         for jugador in self.jugadores :
             jugador.vaciarMaso()
         self.cartas=[]    
         self.crearCartas()
+        self.ventana.after(1100, lambda: self.limpiar())
         self.setLabelAccion("Asignando cartas...")
         self.opcion = 0
         self.jugadorTurno = 0
-        self.ventana.after(3500, lambda: self.iniciarJuego())  # Espera 5 segundos antes de llamar a iniciarJuego
+        self.ventana.after(2000, lambda: self.iniciarJuego())  # Espera 5 segundos antes de llamar a iniciarJuego
 
     def finTurno(self):
         resultado = ""
@@ -142,8 +141,8 @@ class inicioJuego:
          resultado = "Ninguno de los anteriores"
 
         self.setLabelAccionAfet(resultado, 1200)
-        self.setLabelAccionAfet("", 2500)
-        self.ventana.after(3000, lambda: self.rondaReiniciar())
+        self.setLabelAccionAfet("", 2000)
+        self.ventana.after(2500, lambda: self.rondaReiniciar())
 
 
     def finJuego(self):
@@ -235,6 +234,7 @@ class inicioJuego:
         self.ventana.after(300, lambda: self.accionButton(buttonArray, index))
         self.ventana.after(320, self.handleClicHabilidad(habilidadesJugador[index], index, True))
         self.ventana.after(1100, lambda: self.limpiar())
+
       else:
          self.setLabelAccion("No tienes habilidades")
          self.setLabelAccionAfet("", 2000)
@@ -255,7 +255,7 @@ class inicioJuego:
             case "Vida":
               self.jugadores[self.jugadorTurno].putVida()
               if(IA == False):
-               self.limpiar()
+               self.limpiar()       
                self.ventana.after(300, lambda: self.mostrarOpciones())
                self.habilidadOp = ""
             case "Quitar vida":
@@ -298,14 +298,14 @@ class inicioJuego:
 
     def placeLabelJugadores(self):
          self.labelCountJugador.place(relx=0.49, rely=0.7, relwidth=0.05, relheight=0.05)
-         self.labelCountIaJugador.place(relx=0.49, rely=0.1, relwidth=0.05, relheight=0.05)
+         self.labelCountIaJugador.place(relx=0.49, rely=0.2, relwidth=0.05, relheight=0.05)
          self.labelLifeJugador.place(relx=0.8, rely=0.01, relwidth=0.2, relheight=0.05)
          self.labelLifeIA.place( relx=0 , rely=0.01 ,  relwidth=0.2, relheight=0.05)  
          self.labelAccion.place(relx=0.15, rely=0.4, relwidth=0.7, relheight=0.09)
 
     def crearCartas(self):
        for i in range(8):
-        carta1 = carta(10,"Figura")
+        carta1 = carta(4,"Figura")
         self.cartas.append(carta1)
 
     def setLabelAccion(self, txt):
@@ -317,14 +317,15 @@ class inicioJuego:
     def asignarOpcion(self, i):
        self.opcion = i
    
-    def limpiar(self):
+    def limpiar(self, playerCards = True):
         self.ventana.bind("<Configure>", None)
         labels = [self.labelCountJugador, self.labelCountIaJugador, self.labelAccion, self.labelLifeJugador, self.labelLifeIA]
         for widget in self.ventana.winfo_children():
          if widget not in labels:
             widget.destroy()
-      
             # Para hacer herencia se coloca la clase nombre_clase (clase_herencia)
+        if(playerCards):
+           self.colocarCartasPlayers()
 
     def setLabelAccionAfet(self , text, time):
        self.ventana.after(time,  lambda: self.setLabelAccion(text))
@@ -350,6 +351,12 @@ class inicioJuego:
                 i=1
              self.jugadores[i].insertCard(self.cartas[0])
              self.cartas.pop(0)
+      
+    
+    def colocarCartasPlayers(self):
+      for jugador in self.jugadores:
+           jugador.colocarCardsLabels()
+
 
  
 

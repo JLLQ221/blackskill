@@ -1,4 +1,4 @@
-from tkinter import *
+from tkinter import Button, Tk, Label
 from inicioJuego import inicioJuego
 from PIL import Image, ImageTk
 

@@ -23,6 +23,7 @@ class ia(gym.Env):
         return self.state
 
     def step(self, action=None):
+        done = self.check_done()
         reward = 0
         if action is None:
             action = self.h_agent.elegir_accion(self.state)
@@ -49,56 +50,42 @@ class ia(gym.Env):
         return self.state, reward, done, info
 
     def elegirMejorHabilidad(self):
-     state = self.state
-     state_index = self.state_to_index(state)
-     habilidad_index = self.q_agent.elegirAccion(state_index)
-     return habilidad_index
-
-    def elegirMejorHabilidad(self):
-        # Obtener el estado actual del juego
-        state = self.state
-        # Convertir el estado en un índice válido
-        state_index = self.state_to_index(state)
-        # Elegir la mejor acción usando Q-Learning
-        habilidad_index = self.q_agent.elegirAccion(state_index)
-        return habilidad_index
+        # Implementa una lógica adecuada para elegir la mejor habilidad sin usar q_agent
+        # Por ahora, elegiremos la primera habilidad disponible como ejemplo
+        if len(self.context.getHabilidades()) > 0:
+            return 0  # Índice de la primera habilidad disponible
+        return -1  # No hay habilidades disponibles
 
     def state_to_index(self, state):
-        # Convertir el estado en un índice entero
-        state = state.astype(int)
-        state_str = ''.join(map(str, state))
-        state_index = int(state_str) % self.q_agent.state_size  # Asegurarse de que el índice esté dentro de los límites
-        return state_index
+        # No necesitamos este método para el agente heurístico, así que puedes omitirlo
+        pass
 
     def continuar(self):
         # Continuar la lógica aquí después de la espera
         pass
 
     def get_updated_state(self):
-     nuevo_estado = np.array([
-        self.context.getCountVidas(),
-        self.juego.jugadores[0].getCountVidas(),
-        len(self.context.getHabilidades()),
-        len(self.context.getCards()),
-        len(self.juego.jugadores[0].getCards()),
-        self.context.getCountHabilidades()  # Número de habilidades disponibles
-    ], dtype=np.float32)
-     return nuevo_estado
-
+        nuevo_estado = np.array([
+            self.context.getCountVidas(),
+            self.juego.jugadores[0].getCountVidas(),
+            len(self.context.getHabilidades()),
+            len(self.context.getCards()),
+            len(self.juego.jugadores[0].getCards()),
+            self.context.getCountHabilidades()  # Número de habilidades disponibles
+        ], dtype=np.float32)
+        return nuevo_estado
 
     def check_done(self):
-     # Verifica si la vida de alguno de los jugadores ha llegado a cero
-     if self.juego.jugadores[0].getCountVidas() <= 0 or self.context.getCountVidas() <= 0:
-        return True
-     # Verifica si el turno del jugador ha terminado
-     if self.context.turno == False:
-        return True
-     if len(self.juego.cartas) <= 0:
-        return True
-     return False
-
+        # Verifica si la vida de alguno de los jugadores ha llegado a cero
+        if self.juego.jugadores[0].getCountVidas() <= 0 or self.context.getCountVidas() <= 0:
+            return True
+        # Verifica si el turno del jugador ha terminado
+        if not self.context.turno:
+            return True
+        if len(self.juego.cartas) <= 0:
+            return True
+        return False
 
     def render(self, mode='human'):
         # Renderizar el entorno (opcional)
         pass
-
