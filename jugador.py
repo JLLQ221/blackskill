@@ -1,10 +1,11 @@
 from tkinter import Label
 class jugador:
 
-    def __init__(self, countLabel, nombre, ventana , y,  lifeLabel = None, ):
+    def __init__(self, countLabel, nombre, ventana , y, labelAccion ,lifeLabel = None ):
         self.vidas = 3
         self.cartas = []
         self.habilidades = []
+        self.labelAccion = labelAccion
         self.ventana = ventana
         self.countMaso = 0
         self.turno = False
@@ -17,7 +18,10 @@ class jugador:
         
     def insertCard (self ,carta):
         self.cartas.append(carta)
-        self.habilidades.append(carta.habilidad)
+        if(carta.habilidad != None):
+         self.habilidades.append(carta.habilidad)
+         self.labelAccion.config(text="Nueva habilidad " + carta.habilidad)
+         self.ventana.after(12000, lambda: self.labelAccion.config(text=""))
         if(self.getCountHabilidades() > 3):
           self.habilidades.pop(0)
         self.countMaso += carta.valor
@@ -34,10 +38,14 @@ class jugador:
        self.masoPerdido = False
        self.turno = False  
 
+    def reiniciarVida(self):
+       self.vidas = 3
+       self.lifeLabel.config(text=self.nombre + " vidas: " + str(self.vidas)) 
+
     def colocarCardsLabels(self):
        xExponencial = self.xStartLBCards
        for carta in self.cartas:
-         newCard = Label(self.ventana ,background="white", text=carta.valor, relief="solid")
+         newCard = Label(self.ventana ,background="white", text=carta.valor, relief="solid", font=("Arial", 12 , "bold"))
          newCard.place(relx=xExponencial, rely=self.y, relwidth=0.06, relheight=0.12)
          xExponencial += 0.04
 
@@ -58,8 +66,9 @@ class jugador:
        return len(self.habilidades)
 
     def popVida(self):
-       self.vidas -= 1
-       self.lifeLabel.config(text=self.nombre + " vidas: " + str(self.vidas))
+       if(self.vidas > 0):
+        self.vidas -= 1
+        self.lifeLabel.config(text=self.nombre + " vidas: " + str(self.vidas))
    
     def putVida(self):
        self.vidas += 1

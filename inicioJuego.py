@@ -2,6 +2,7 @@ from tkinter import Label, Button
 from jugador import jugador
 from carta import carta
 from ia import ia
+import random
 
 class inicioJuego:
     def __init__(self, ventana):
@@ -11,8 +12,8 @@ class inicioJuego:
        self.activeForeground = "#d0d2d5"
        self.ventana = ventana
        self.colocarLabelImp()
-       self.jugador1 = jugador(countLabel=self.labelCountJugador, lifeLabel=self.labelLifeJugador, y=0.8 , ventana=self.ventana ,  nombre="Tus")
-       self.jugadorIA = jugador(countLabel=self.labelCountIaJugador, lifeLabel=self.labelLifeIA, y=0.03 , ventana=self.ventana ,nombre="Oponente")
+       self.jugador1 = jugador( labelAccion=self.labelAccion , countLabel=self.labelCountJugador, lifeLabel=self.labelLifeJugador, y=0.8 , ventana=self.ventana ,  nombre="Tus")
+       self.jugadorIA = jugador( labelAccion=self.labelAccion , countLabel=self.labelCountIaJugador, lifeLabel=self.labelLifeIA, y=0.03 , ventana=self.ventana ,nombre="Oponente")
        self.jugadores = [self.jugador1, self.jugadorIA]
        self.limpiar()
        self.placeLabelJugadores()
@@ -27,7 +28,6 @@ class inicioJuego:
     def iniciarJuego(self):
        self.setLabelAccion("")
        self.asignarCartas()
-       self.placeLabelJugadores()
        self.colocarCartasPlayers()
        self.jugadores[self.jugadorTurno].turno=True
        self.mostrarOpciones()
@@ -62,10 +62,7 @@ class inicioJuego:
           self.jugadorIA.turno = True
           self.ventana.after(1750 , lambda: self.realizarAccionIA() )
          else:
-            if not self.finJuego():
-               self.finTurno()
-            else: 
-               self.finJuego()
+            self.isOver()
 
     def realizarAccionIA(self):
      state = self.IA.reset()
@@ -78,12 +75,9 @@ class inicioJuego:
             if not self.done:
                 self.ventana.after(2800, lambda: ejecutar_accion())  # Programar la próxima acción después de 2.6 segundos
             else:
-                 if not self.finJuego():
-                    self.ventana.after(2000, lambda: self.finTurno())
-                 else:
-                    self.ventana.after(2000, lambda: self.finJuego())
+                self.ventana.after(2000, lambda: self.isOver())
+         
      ejecutar_accion()
-
 
     def usarHabilidadIA(self, i):
         print("IA usa habilidad")
@@ -95,7 +89,6 @@ class inicioJuego:
     def tomarCartaIA(self):
         print(len(self.cartas))
         print("IA usa tomar carta")
-
         if len(self.cartas) > 0:
          self.mostrarOpcionesIA(1, 500)
          self.jugadores[self.jugadorTurno].insertCard(self.cartas[0])
@@ -120,6 +113,10 @@ class inicioJuego:
         self.opcion = 0
         self.jugadorTurno = 0
         self.ventana.after(2000, lambda: self.iniciarJuego())  # Espera 5 segundos antes de llamar a iniciarJuego
+
+    def isOver(self) :
+       if not self.finJuego():
+           self.finTurno()
 
     def finTurno(self):
         resultado = ""
@@ -150,16 +147,38 @@ class inicioJuego:
          self.setLabelAccion("Se termino el juego")
          self.setLabelAccionAfet("", 1500) 
          self.limpiar(False)
+         self.reiniciarJuego()
          return True
         elif  self.jugadores[1].getCountVidas() == 0:
          self.setLabelAccion("Ganastes")
          self.setLabelAccionAfet("", 1500)
          self.limpiar(False)
+         self.reiniciarJuego()
          return True
         return False
-          
-    
    
+    def reiniciarJuego(self):
+       buttonOp1 = Button(self.ventana, text="Reiniciar", background=self.colorBotons, relief="raised", foreground="white", command=self.handleClicReset, font=("arial", 11, "bold"), activebackground=self.colorAccion, activeforeground=self.activeForeground)
+       buttonOp2 = Button(self.ventana, text="Salir", background=self.colorBotons, relief="raised", foreground="white" , command=self.handleClicExit, font=("arial", 11, "bold"), activebackground=self.colorAccion, activeforeground=self.activeForeground)
+       buttonOp1.place(relx=0.30, rely=0.6, relwidth=0.13)
+       buttonOp2.place(relx=0.62, rely=0.6, relwidth=0.13)
+   
+    def handleClicReset(self):
+       for jugador in self.jugadores:
+         jugador.vaciarMaso()
+         jugador.reiniciarVida()
+       self.limpiar(False)
+       self.setLabelAccion("Asignando cartas...")
+       self.opcion = 0
+       self.habilidadOp = ""
+       self.jugadorTurno = 0
+       self.cartas = []
+       self.crearCartas()
+       self.iniciarJuego()
+
+    def handleClicExit(self):
+       self.ventana.quit()
+
     def mostrarOpciones(self):
        buttonOp1 = Button(self.ventana, text="Habilidad", background=self.colorBotons, relief="raised", foreground="white" ,command=lambda: self.asignarOpcion(1), font=("arial", 11, "bold"), activebackground=self.colorAccion, activeforeground=self.activeForeground)
        buttonOp2 = Button(self.ventana, text="Tomar carta", background=self.colorBotons, relief="raised" , foreground="white" ,command=lambda: self.asignarOpcion(2), font=("arial", 11, "bold"), activebackground=self.colorAccion, activeforeground=self.activeForeground)
@@ -243,14 +262,11 @@ class inicioJuego:
          self.setLabelAccionAfet("", 2000)
          self.mostrarOpcionesIA()
 
-
     def cartaSiguienteIA(self):
       self.verCartaSiguiente(True)
 
-
     def accionButton(self, arrayButton, index):
          arrayButton[index].config(background=self.colorAccion, foreground=self.activeForeground, relief="sunken")
-
     
     def escogerHabilidad(self, IA = False):
        if self.habilidadOp != "" :
@@ -296,20 +312,32 @@ class inicioJuego:
         self.labelCountIaJugador = Label(self.ventana, text="0", background=colorLabelCount, font=("Arial", 12))
         self.labelAccion = Label(self.ventana, text="", background=self.colorUniversal, font=("Arial", 12, "bold"), relief="ridge")
         self.ventana.config(background=None)
-        self.labelLifeJugador = Label(self.ventana, text="Tus vidas: 3", background=self.colorUniversal, foreground="white"  ,font=("Arial", 12))
-        self.labelLifeIA = Label(self.ventana, text="Oponente vidas: 3", background=self.colorUniversal, foreground="white" ,font=("Arial", 12))
+        self.labelLifeJugador = Label(self.ventana, text="Tus vidas: 3", background=self.colorUniversal, foreground="white"  ,font=("Arial", 13, "bold"))
+        self.labelLifeIA = Label(self.ventana, text="Oponente vidas: 3", background=self.colorUniversal, foreground="white" ,font=("Arial", 13, "bold"))
 
     def placeLabelJugadores(self):
          self.labelCountJugador.place(relx=0.49, rely=0.7, relwidth=0.05, relheight=0.05)
          self.labelCountIaJugador.place(relx=0.49, rely=0.2, relwidth=0.05, relheight=0.05)
          self.labelLifeJugador.place(relx=0.8, rely=0.01, relwidth=0.2, relheight=0.05)
-         self.labelLifeIA.place( relx=0 , rely=0.01 ,  relwidth=0.2, relheight=0.05)  
+         self.labelLifeIA.place( relx=0 , rely=0.01 ,  relwidth=0.24, relheight=0.05)  
          self.labelAccion.place(relx=0.15, rely=0.4, relwidth=0.7, relheight=0.09)
 
     def crearCartas(self):
-       for i in range(8):
-        carta1 = carta(4,"Figura")
-        self.cartas.append(carta1)
+        valores = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]  # Valores numéricos del 1 al 10
+        tipos = ["Corazones", "Diamantes", "Tréboles", "Picas"]
+        figuras = {"J": 10, "Q": 10, "K": 10}  # Figuras con valor 10
+        
+        for valor in valores:
+            for tipo in tipos:
+                cartaNew = carta(valor, tipo)
+                self.cartas.append(cartaNew)
+                
+        for tipo in tipos:
+            for figura, valor in figuras.items():
+                cartaNew = carta(valor, tipo)
+                self.cartas.append(cartaNew)
+        
+        random.shuffle(self.cartas)  # Barajar las cartas al azar
 
     def setLabelAccion(self, txt):
        if txt == "":
@@ -354,15 +382,7 @@ class inicioJuego:
                 i=1
              self.jugadores[i].insertCard(self.cartas[0])
              self.cartas.pop(0)
-      
     
     def colocarCartasPlayers(self):
       for jugador in self.jugadores:
-           jugador.colocarCardsLabels()
-
-
- 
-
- 
-
-       
+           jugador.colocarCardsLabels()       

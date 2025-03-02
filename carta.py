@@ -9,12 +9,12 @@ class carta:
     # Colocar las distintas habilidades dependiendo de la carta
     def definirHabilidad(self):
         match (self.tipo):
-            case "As":
+            case "J":
                 self.habilidad= "Vida"
-            case "Figura":
+            case "Q":
                 self.habilidad="Sg. carta"
-            case "Rombo":
+            case "K":
                 self.habilidad="Quitar vida"  
             case _:
-                self.habilidad= ""
+                self.habilidad= None
      

@@ -9,15 +9,7 @@ def handleButtonInicio():
 
 def handleButtonExit():
     global ventana
-    ventana.quit()  
-
-def on_enter(e):
-    e.widget['background'] = 'yellow'
-    e.widget['borderwidth'] = 1
-
-def on_exit(e):
-    e.widget['background'] = 'SystemButtonFace'
-    e.widget['borderwidth'] = 0    
+    ventana.quit()    
 
 def redimensionar_imagen(event):
     global imagen_fondo, label_imagen
@@ -59,11 +51,6 @@ buttonInicio.place(relx=0.01, rely=0.4, relwidth=0.2, relheight=0.05)
 
 buttonSalir = Button(ventana, text='Salir de juego', command = handleButtonExit, relief="flat")
 buttonSalir.place(relx=0.01, rely=0.5, relwidth=0.2, relheight=0.05)
-
-# buttonInicio.bind("<Enter>", on_enter)
-# buttonInicio.bind("<Leave>", on_exit)
-# buttonSalir.bind("<Enter>", on_enter)
-# buttonSalir.bind("<Leave>", on_exit)
 
 ventana.bind("<Configure>", redimensionar_imagen)
 

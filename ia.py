@@ -67,7 +67,7 @@ class ia(gym.Env):
     def get_updated_state(self):
         nuevo_estado = np.array([
             self.context.getCountVidas(),
-            self.juego.jugadores[0].getCountVidas(),
+            self.juego.jugador1.getCountVidas(),
             len(self.context.getHabilidades()),
             len(self.context.getCards()),
             len(self.juego.jugadores[0].getCards()),
@@ -77,7 +77,7 @@ class ia(gym.Env):
 
     def check_done(self):
         # Verifica si la vida de alguno de los jugadores ha llegado a cero
-        if self.juego.jugadores[0].getCountVidas() <= 0 or self.context.getCountVidas() <= 0:
+        if self.juego.jugador1.getCountVidas() <= 0 or self.context.getCountVidas() <= 0:
             return True
         # Verifica si el turno del jugador ha terminado
         if not self.context.turno:
