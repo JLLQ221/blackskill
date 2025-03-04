@@ -69,6 +69,17 @@ class jugador:
        if(self.vidas > 0):
         self.vidas -= 1
         self.lifeLabel.config(text=self.nombre + " vidas: " + str(self.vidas))
+       else: 
+         self.turno = self.turno = False
+   
+    def isTurnoOVer(self):
+      if(self.vidas > 0):
+        self.turno = self.turno = True
+        return True
+      else: 
+         self.turno = self.turno = False
+         return False
+    
    
     def putVida(self):
        self.vidas += 1

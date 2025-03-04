@@ -6,6 +6,8 @@ Para poder instalar el proyecto debemos de:
 
 3.-También debemos de instalar la libreria GYM de python con el comando pip install gym
 
+Luego de eso tienes que ir a la clase menuJuego y dar clic al compilador
+
 La clase HeuristicAgent utiliza una heurística para tomar decisiones basadas en el estado actual. Una heurística es una regla o un conjunto de reglas que permiten encontrar soluciones rápidas y satisfactorias para problemas complejos. A continuación, te explico cómo funciona la heurística en este ejemplo:
 
 Si el primer elemento del estado (state[0]) es menor que 2: Esto indica que el agente tiene menos de 2 vidas. La heurística en este caso es plantarse (retornar 2).

@@ -17,21 +17,24 @@ class inicioJuego:
        self.jugadores = [self.jugador1, self.jugadorIA]
        self.limpiar()
        self.placeLabelJugadores()
-       self.setLabelAccion("Asignando cartas...")
        self.IA = ia(self)
        self.opcion = 0
        self.habilidadOp = ""
        self.jugadorTurno = 0
        self.cartas = []
        self.crearCartas()
+       self.setLabelAccion("")
    
     def iniciarJuego(self):
        self.setLabelAccion("")
-       self.asignarCartas()
-       self.colocarCartasPlayers()
-       self.jugadores[self.jugadorTurno].turno=True
-       self.mostrarOpciones()
-       self.jugador1TurnoStart()
+       if(not self.finJuego()):
+        self.setLabelAccion("Asignando cartas...")
+        self.ventana.after(1200, lambda: self.setLabelAccion(""))
+        self.asignarCartas()
+        self.colocarCartasPlayers()
+        self.jugadores[self.jugadorTurno].isTurnoOVer()
+        self.ventana.after(1500, lambda:self.mostrarOpciones())
+        self.jugador1TurnoStart()
         
         # Colocar ciclo while para la IA
     def jugador1TurnoStart(self):
@@ -54,13 +57,11 @@ class inicioJuego:
              self.opcion = 0
        self.ventana.after(100, self.jugador1TurnoStart)
       else:
-         if(self.jugador1.masoPerdido == False):
-          print("Turno del oponente")
-          self.setLabelAccion("Turno del oponente")
-          self.setLabelAccionAfet("", 1500)
-          self.jugadorTurno = 1
-          self.jugadorIA.turno = True
-          self.ventana.after(1750 , lambda: self.realizarAccionIA() )
+         if(self.jugador1.masoPerdido == False and self.jugadorIA.isTurnoOVer()):
+           self.setLabelAccion("Turno del oponente")
+           self.setLabelAccionAfet("", 1500)
+           self.jugadorTurno = 1
+           self.ventana.after(1750 , lambda: self.realizarAccionIA() )
          else:
             self.isOver()
 
@@ -109,7 +110,6 @@ class inicioJuego:
         self.cartas=[]    
         self.crearCartas()
         self.ventana.after(1100, lambda: self.limpiar(False))
-        self.setLabelAccion("Asignando cartas...")
         self.opcion = 0
         self.jugadorTurno = 0
         self.ventana.after(2000, lambda: self.iniciarJuego())  # Espera 5 segundos antes de llamar a iniciarJuego
@@ -130,7 +130,7 @@ class inicioJuego:
          self.jugadorIA.popVida()
         elif self.jugadorIA.masoPerdido:
          resultado = "Ganastes la ronda"
-         self.jugador1.popVida()
+         self.jugadorIA.popVida()
         elif self.jugador1.masoPerdido:
          resultado = "Perdiste la ronda"
          self.jugador1.popVida()
@@ -143,18 +143,19 @@ class inicioJuego:
 
 
     def finJuego(self):
-        if self.jugadores[0].getCountVidas() == 0 :  
-         self.setLabelAccion("Se termino el juego")
+        if self.jugador1.getCountVidas() < 1 :  
+         self.setLabelAccion("Perdistes fin del juego")
          self.setLabelAccionAfet("", 1500) 
          self.limpiar(False)
          self.reiniciarJuego()
          return True
-        elif  self.jugadores[1].getCountVidas() == 0:
+        elif  self.jugadorIA.getCountVidas() < 1:
          self.setLabelAccion("Ganastes")
          self.setLabelAccionAfet("", 1500)
          self.limpiar(False)
          self.reiniciarJuego()
          return True
+        
         return False
    
     def reiniciarJuego(self):
